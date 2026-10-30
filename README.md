@@ -1,3 +1,5 @@
+![Banner](banner.png)
+
 # crypto-side-channel-simulator
 
 Runs basic cryptographic operations (RSA, AES, SHA-256/SHA-512 hashing, HMAC, and PBKDF2) and logs a simulated timing figure for each one: the measured wall clock time plus or minus a random variation of up to 10 percent. It is a timing simulation only. It does not measure power consumption and it does not perform an actual side-channel attack or recover any key material.
