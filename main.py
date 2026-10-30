@@ -1,5 +1,6 @@
 import argparse
 import logging
+import sys
 import time
 import random
 from cryptography.hazmat.primitives import hashes
@@ -330,59 +331,80 @@ def pbkdf2_simulation(password, salt, iterations=1000, algorithm='sha256'):
 def main():
     """
     Main function to parse arguments and run the selected simulation.
+    Returns 0 when the selected operation completes and 1 when it
+    fails. Every simulation helper signals failure by returning None
+    (or a (None, None) pair for AES encryption); the old main ignored
+    those returns, so a failed key generation or an oversize RSA
+    payload exited 0 with only an error line in the log.
     """
     args = setup_argparse()
 
     if args.debug:
         logging.getLogger().setLevel(logging.DEBUG)
 
+    if args.data_size < 0:
+        logging.error("Data size must not be negative.")
+        return 1
+    if args.iterations < 1:
+        logging.error("Iterations must be at least 1.")
+        return 1
+
     try:
         if args.operation == 'rsa_keygen':
-            rsa_keygen_simulation(args.key_size)
+            ok = rsa_keygen_simulation(args.key_size) is not None
         elif args.operation == 'rsa_encrypt':
             private_key = rsa_keygen_simulation(args.key_size)
-            if private_key:
-                data = os.urandom(args.data_size)
-                rsa_encrypt_simulation(private_key, data)
+            if not private_key:
+                return 1
+            data = os.urandom(args.data_size)
+            ok = rsa_encrypt_simulation(private_key, data) is not None
         elif args.operation == 'rsa_decrypt':
             private_key = rsa_keygen_simulation(args.key_size)
-            if private_key:
-                data = os.urandom(args.data_size)
-                ciphertext = rsa_encrypt_simulation(private_key, data)
-                if ciphertext:
-                    rsa_decrypt_simulation(private_key, ciphertext)
+            if not private_key:
+                return 1
+            data = os.urandom(args.data_size)
+            ciphertext = rsa_encrypt_simulation(private_key, data)
+            if not ciphertext:
+                return 1
+            ok = rsa_decrypt_simulation(private_key, ciphertext) is not None
         elif args.operation == 'aes_encrypt':
             key = os.urandom(32)  # AES-256 key
             data = os.urandom(args.data_size)
-            aes_encrypt_simulation(key, data)
+            _iv, ciphertext = aes_encrypt_simulation(key, data)
+            ok = ciphertext is not None
         elif args.operation == 'aes_decrypt':
             key = os.urandom(32)  # AES-256 key
             data = os.urandom(args.data_size)
             iv, ciphertext = aes_encrypt_simulation(key, data)
-            if iv and ciphertext:
-                 aes_decrypt_simulation(key, iv, ciphertext)
-
+            if not iv or not ciphertext:
+                return 1
+            ok = aes_decrypt_simulation(key, iv, ciphertext) is not None
         elif args.operation == 'hash':
             data = os.urandom(args.data_size)
-            hash_simulation(data)
+            ok = hash_simulation(data) is not None
         elif args.operation == 'hmac':
             key = os.urandom(32)
             data = os.urandom(args.data_size)
-            hmac_simulation(key, data)
+            ok = hmac_simulation(key, data) is not None
         elif args.operation == 'pbkdf2':
             password = b"password123"
             salt = os.urandom(16)
-            pbkdf2_simulation(password, salt, args.iterations)
+            ok = pbkdf2_simulation(password, salt, args.iterations) is not None
+        else:
+            return 1
 
         if args.show_time:
            logging.info("Showing time is enabled.  The simulated times are already logged.")
 
+        return 0 if ok else 1
 
     except ValueError as e:
         logging.error(f"Invalid input: {e}")
+        return 1
     except Exception as e:
         logging.error(f"An unexpected error occurred: {e}")
+        return 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

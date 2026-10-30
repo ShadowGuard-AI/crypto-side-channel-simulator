@@ -59,7 +59,7 @@ Example output (timestamps and times vary):
 
 ## Limitations
 
-- Errors during an operation (for example an RSA key size below 1024 bits, or data too large for the RSA key) are logged as errors and the program still exits with status 0.
+- Errors during an operation (for example an RSA key size below 1024 bits, or data too large for the RSA key) are logged as errors and the program exits with status 1; a completed operation exits 0. A negative `--data_size` and a `--iterations` below 1 are rejected with status 1 before any operation runs.
 - Only the SHA-256 code paths are reachable from the command line. SHA-512 variants exist in the library functions (`hash_simulation`, `hmac_simulation`, `pbkdf2_simulation`) but there is no command line flag to select them.
 - AES uses CFB mode with a random IV that is returned by the library function but not printed by the command line program.
 - There are no bundled tests.
