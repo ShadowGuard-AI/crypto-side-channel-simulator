@@ -67,3 +67,9 @@ Example output (timestamps and times vary):
 ## License
 
 Copyright (c) ShadowStrikeHQ. No license file is included in this repository.
+
+## Diagrams and maps
+
+I drew the system out in [crypto-side-channel-simulator-Visuals](crypto-side-channel-simulator-Visuals/): an architecture diagram, a timing diagram showing how each simulated figure is made, a flowchart of a run, and a product map, with the written product map, statistics with citations, and the roadmap in [VISUAL.md](crypto-side-channel-simulator-Visuals/VISUAL.md). Every sheet also ships as a PNG photograph of the paper page beside its SVG.
+
+![crypto-side-channel-simulator architecture](crypto-side-channel-simulator-Visuals/architecture.svg)
