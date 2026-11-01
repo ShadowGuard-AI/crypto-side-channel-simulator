@@ -43,6 +43,12 @@ def simulate_timing_variation(base_time, variation_percentage=0.1):
     Returns:
         float: The simulated execution time with variation.
     """
+    # The variation is drawn without looking at the data, the key, or
+    # anything the operation touched. So the simulated time carries no
+    # signal about a secret: it is the real measured time with up to
+    # ten percent of uniform noise folded in, which is why these runs
+    # can demonstrate the shape of timing output but cannot show an
+    # actual leak. A real timing side channel varies with the input.
     variation = base_time * variation_percentage * random.uniform(-1, 1)
     return base_time + variation
 
@@ -394,6 +400,10 @@ def main():
             return 1
 
         if args.show_time:
+           # The flag changes nothing about what is printed: every
+           # simulation logs its simulated time whether or not this is
+           # passed. It is kept as an explicit acknowledgement switch,
+           # not a display control.
            logging.info("Showing time is enabled.  The simulated times are already logged.")
 
         return 0 if ok else 1
